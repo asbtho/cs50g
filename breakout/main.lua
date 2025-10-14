@@ -58,6 +58,16 @@ function love.load()
         ['hearts'] = love.graphics.newImage('graphics/hearts.png'),
         ['particle'] = love.graphics.newImage('graphics/particle.png')
     }
+
+    -- Quads we will generate for all of our textures; Quads allow us
+    -- to show only part of a texture and not the entire thing
+    gFrames = {
+        ['arrows'] = GenerateQuads(gTextures['arrows'], 24, 24),
+        ['paddles'] = GenerateQuadsPaddles(gTextures['main']),
+        ['balls'] = GenerateQuadsBalls(gTextures['main']),
+        ['bricks'] = GenerateQuadsBricks(gTextures['main']),
+        ['hearts'] = GenerateQuads(gTextures['hearts'], 10, 9)
+    }
     
     -- initialize our virtual resolution, which will be rendered within our
     -- actual window no matter its dimensions
@@ -99,9 +109,22 @@ function love.load()
     -- 5. 'victory' (the current level is over, with a victory jingle)
     -- 6. 'game-over' (the player has lost; display score and allow restart)
     gStateMachine = StateMachine {
-        ['start'] = function() return StartState() end
+        ['start'] = function() return StartState() end,
+        ['play'] = function() return PlayState() end,
+        ['serve'] = function() return ServeState() end,
+        ['game-over'] = function() return GameOverState() end,
+        ['victory'] = function() return VictoryState() end,
+        ['high-scores'] = function() return HighScoreState() end,
+        ['enter-high-score'] = function() return EnterHighScoreState() end,
+        ['paddle-select'] = function() return PaddleSelectState() end
     }
-    gStateMachine:change('start')
+    gStateMachine:change('start', {
+        highScores = loadHighScores()
+    })
+
+    -- play our music outside of all states and set it to looping
+    gSounds['music']:play()
+    gSounds['music']:setLooping(true)
 
     -- a table we'll use to keep track of which keys have been pressed this
     -- frame, to get around the fact that LÖVE's default callback won't let us
@@ -190,6 +213,77 @@ function love.draw()
 end
 
 --[[
+    Loads high scores from a .lst file, saved in LÖVE2D's default save directory in a subfolder
+    called 'breakout'.
+]]
+function loadHighScores()
+    love.filesystem.setIdentity('breakout')
+
+    -- if the file doesn't exist, initialize it with some default scores
+    if not love.filesystem.getInfo('breakout.lst') then
+        local scores = ''
+        for i = 10, 1, -1 do
+            scores = scores .. 'CTO\n'
+            scores = scores .. tostring(i * 1000) .. '\n'
+        end
+
+        love.filesystem.write('breakout.lst', scores)
+    end
+
+    -- flag for whether we're reading a name or not
+    local name = true
+    local currentName = nil
+    local counter = 1
+
+    -- initialize scores table with at least 10 blank entries
+    local scores = {}
+
+    for i = 1, 10 do
+        -- blank table; each will hold a name and a score
+        scores[i] = {
+            name = nil,
+            score = nil
+        }
+    end
+
+    -- iterate over each line in the file, filling in names and scores
+    for line in love.filesystem.lines('breakout.lst') do
+        if name then
+            scores[counter].name = string.sub(line, 1, 3)
+        else
+            scores[counter].score = tonumber(line)
+            counter = counter + 1
+        end
+
+        -- flip the name flag
+        name = not name
+    end
+
+    return scores
+end
+
+--[[
+    Renders hearts based on how much health the player has. First renders
+    full hearts, then empty hearts for however much health we're missing.
+]]
+function renderHealth(health)
+    -- start of our health rendering
+    local healthX = VIRTUAL_WIDTH - 100
+    
+    -- render health left
+    for i = 1, health do
+        love.graphics.draw(gTextures['hearts'], gFrames['hearts'][1], healthX, 4)
+        healthX = healthX + 11
+    end
+
+    -- render missing health
+    for i = 1, 3 - health do
+        love.graphics.draw(gTextures['hearts'], gFrames['hearts'][2], healthX, 4)
+        healthX = healthX + 11
+    end
+end
+
+--[[
     Renders the current FPS.
 ]]
 function displayFPS()
@@ -197,4 +291,14 @@ function displayFPS()
     love.graphics.setFont(gFonts['small'])
     love.graphics.setColor(0, 1, 0, 1)
     love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), 5, 5)
+end
+
+--[[
+    Simply renders the player's score at the top right, with left-side padding
+    for the score number.
+]]
+function renderScore(score)
+    love.graphics.setFont(gFonts['small'])
+    love.graphics.print('Score:', VIRTUAL_WIDTH - 60, 5)
+    love.graphics.printf(tostring(score), VIRTUAL_WIDTH - 50, 5, 40, 'right')
 end

@@ -20,11 +20,30 @@ StartState = Class{__includes = BaseState}
 -- whether we're highlighting "Start" or "High Scores"
 local highlighted = 1
 
+function StartState:enter(params)
+    self.highScores = params.highScores
+end
+
 function StartState:update(dt)
     -- toggle highlighted option if we press an arrow key up or down
     if love.keyboard.wasPressed('up') or love.keyboard.wasPressed('down') then
         highlighted = highlighted == 1 and 2 or 1
         gSounds['paddle-hit']:play()
+    end
+
+    -- confirm whichever option we have selected to change screens
+    if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
+        gSounds['confirm']:play()
+
+        if highlighted == 1 then
+            gStateMachine:change('paddle-select', {
+                highScores = self.highScores
+            })
+        else
+            gStateMachine:change('high-scores', {
+                highScores = self.highScores
+            })
+        end
     end
 
     -- we no longer have this globally, so include here
