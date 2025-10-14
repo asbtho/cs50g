@@ -55,6 +55,8 @@ PADDLE_SPEED = 200
     game objects, variables, etc. and prepare the game world.
 ]]
 function love.load()
+    min_dt = 1/60
+    next_time = love.timer.getTime()
     -- set love's default filter to "nearest-neighbor", which essentially
     -- means there will be no filtering of pixels (blurriness), which is
     -- important for a nice crisp, 2D look
@@ -136,6 +138,7 @@ end
     across system hardware.
 ]]
 function love.update(dt)
+    next_time = next_time + min_dt
     if gameState == 'serve' then
         -- before switching to play, initialize ball's velocity based
         -- on player who last scored
@@ -349,6 +352,12 @@ function love.draw()
 
     -- end our drawing to push
     push:finish()
+    local cur_time = love.timer.getTime()
+    if next_time <= cur_time then
+        next_time = cur_time
+        return
+    end
+    love.timer.sleep(next_time - cur_time)
 end
 
 --[[
