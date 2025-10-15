@@ -1,0 +1,2 @@
+- Implement a basic AI for either Player 1 or 2 (or both!).<br>
+  - Half done
