@@ -90,6 +90,7 @@ function PlayState:update(dt)
     -- update bird based on gravity and input
     self.bird:update(dt)
 
+    -- pause on p pressed and send state to pausestate
     if love.keyboard.wasPressed('p') then
         gStateMachine:change('pause', {
             bird = self.bird,
