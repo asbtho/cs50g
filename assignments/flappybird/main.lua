@@ -101,6 +101,13 @@ function love.load()
         ['pause'] = love.audio.newSource('pause.wav', 'static')
     }
 
+    -- load medals
+    medals = {
+        ['gold'] = love.graphics.newImage('gold.png'),
+        ['silver'] = love.graphics.newImage('silver.png'),
+        ['bronze'] = love.graphics.newImage('bronze.png')
+    }
+
     -- kick off music
     sounds['music']:setLooping(true)
     sounds['music']:play()
