@@ -90,6 +90,15 @@ function PlayState:update(dt)
     -- update bird based on gravity and input
     self.bird:update(dt)
 
+    if love.keyboard.wasPressed('p') then
+        gStateMachine:change('pause', {
+            bird = self.bird,
+            pipePairs = self.pipePairs,
+            timer = self.timer,
+            score = self.score
+        })
+    end
+
     -- reset if we get to the ground
     if self.bird.y > VIRTUAL_HEIGHT - 15 then
         sounds['explosion']:play()
@@ -115,7 +124,20 @@ end
 --[[
     Called when this state is transitioned to from another state.
 ]]
-function PlayState:enter()
+function PlayState:enter(params)
+    -- if we're coming from pause or countdown
+    if params == nil then
+        self.bird = Bird()
+        self.pipePairs = {}
+        self.timer = 0
+        self.score = 0
+    else
+        self.bird = params.bird
+        self.pipePairs = params.pipePairs
+        self.timer = params.timer
+        self.score = params.score
+    end
+
     -- if we're coming from death, restart scrolling
     scrolling = true
 end
