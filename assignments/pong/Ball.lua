@@ -62,8 +62,8 @@ function Ball:update(dt)
     self.y = self.y + self.dy * dt
 end
 
-function Ball:getY()
-    return self.y
+function Ball:getCenterY()
+    return self.y + self.height / 2
 end
 
 function Ball:render()

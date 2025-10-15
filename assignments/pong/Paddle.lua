@@ -34,8 +34,8 @@ function Paddle:init(x, y, width, height)
     self.dy = 0
 end
 
-function Paddle:getY()
-    return self.y
+function Paddle:getCenterY()
+    return self.y + self.height / 2
 end
 
 function Paddle:update(dt)
