@@ -15,7 +15,7 @@
 
 Ball = Class{}
 
-function Ball:init(skin)
+function Ball:init(skin, extra)
     -- simple positional and dimensional variables
     self.width = 8
     self.height = 8
@@ -28,6 +28,7 @@ function Ball:init(skin)
     -- this will effectively be the color of our ball, and we will index
     -- our table of Quads relating to the global block texture using this
     self.skin = skin
+    self.extra = extra
 end
 
 --[[

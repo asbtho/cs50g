@@ -28,6 +28,9 @@ function PlayState:enter(params)
     self.highScores = params.highScores
     self.ball = params.ball
     self.level = params.level
+    self.extraBalls = {}
+    self.ballPowerUpPickup = false
+    self.ballPowerUpInPlay = false
 
     self.recoverPoints = 5000
 
@@ -50,29 +53,32 @@ function PlayState:update(dt)
         return
     end
 
+    -- extra ball powerup pickup generate two balls
+    if self.ballPowerUpPickup then
+        self.extraball = Ball()
+        self.extraball.skin = math.random(7)
+        self.extraball.extra = true
+        self.extraball.dx = math.random(-200, 200)
+        self.extraball.dy = math.random(-50, -60)
+        table.insert(self.extraBalls, self.extraball)
+        self.ballPowerUpPickup = false
+        self.ballPowerUpInPlay = true
+    end
+
     -- update positions based on velocity
     self.paddle:update(dt)
     self.ball:update(dt)
-
-    if self.ball:collides(self.paddle) then
-        -- raise ball above paddle in case it goes below it, then reverse dy
-        self.ball.y = self.paddle.y - 8
-        self.ball.dy = -self.ball.dy
-
-        --
-        -- tweak angle of bounce based on where it hits the paddle
-        --
-
-        -- if we hit the paddle on its left side while moving left...
-        if self.ball.x < self.paddle.x + (self.paddle.width / 2) and self.paddle.dx < 0 then
-            self.ball.dx = -50 + -(8 * (self.paddle.x + self.paddle.width / 2 - self.ball.x))
-        
-        -- else if we hit the paddle on its right side while moving right...
-        elseif self.ball.x > self.paddle.x + (self.paddle.width / 2) and self.paddle.dx > 0 then
-            self.ball.dx = 50 + (8 * math.abs(self.paddle.x + self.paddle.width / 2 - self.ball.x))
+    if self.ballPowerUpInPlay then
+        for k, extraBall in pairs(self.extraBalls) do
+            extraBall:update(dt)
         end
+    end
 
-        gSounds['paddle-hit']:play()
+    self.ballPaddleCollide(self.ball)
+    if self.ballPowerUpInPlay then
+        for k, extraBall in pairs(self.extraBalls) do
+            self.ballPaddleCollide(extraBall)
+        end
     end
 
     -- detect collision across all bricks with the ball
@@ -229,4 +235,27 @@ function PlayState:checkVictory()
     end
 
     return true
+end
+
+function PlayState:ballPaddleCollide(ball)
+    if ball:collides(self.paddle) then
+        -- raise ball above paddle in case it goes below it, then reverse dy
+        ball.y = self.paddle.y - 8
+        ball.dy = -ball.dy
+
+        --
+        -- tweak angle of bounce based on where it hits the paddle
+        --
+
+        -- if we hit the paddle on its left side while moving left...
+        if ball.x < self.paddle.x + (self.paddle.width / 2) and self.paddle.dx < 0 then
+            ball.dx = -50 + -(8 * (self.paddle.x + self.paddle.width / 2 - ball.x))
+        
+        -- else if we hit the paddle on its right side while moving right...
+        elseif ball.x > self.paddle.x + (self.paddle.width / 2) and self.paddle.dx > 0 then
+            ball.dx = 50 + (8 * math.abs(self.paddle.x + self.paddle.width / 2 - ball.x))
+        end
+
+        gSounds['paddle-hit']:play()
+    end
 end
