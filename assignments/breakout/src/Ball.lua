@@ -28,7 +28,10 @@ function Ball:init(skin, extra)
     -- this will effectively be the color of our ball, and we will index
     -- our table of Quads relating to the global block texture using this
     self.skin = skin
+    -- powerup extras
     self.extra = extra
+    self.remove = false
+    self.timer = 0
 end
 
 --[[
@@ -65,6 +68,17 @@ end
 function Ball:update(dt)
     self.x = self.x + self.dx * dt
     self.y = self.y + self.dy * dt
+
+    -- timer for powerup ball
+    if self.extra then
+        self.timer = self.timer + dt
+    end
+
+    -- remove when 15 seconds has passed
+    if self.timer > 15 then
+        self.remove = true
+        self.timer = 0
+    end
 
     -- allow ball to bounce off walls
     if self.x <= 0 then
