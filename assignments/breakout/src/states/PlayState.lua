@@ -29,7 +29,9 @@ function PlayState:enter(params)
     self.balls = params.balls
     self.level = params.level
     self.ballPowerUpPickup = false
-    self.ballPowerUpInPlay = false
+    self.spawnPowerUp = false
+    self.powerup = Powerup()
+    self.powerupTimer = 0
 
     self.recoverPoints = 5000
 
@@ -52,6 +54,31 @@ function PlayState:update(dt)
         return
     end
 
+    self.powerupTimer = self.powerupTimer + dt
+
+    -- spawn powerup on interval
+    if self.powerupTimer > POWERUP_INTERVAL and not self.spawnPowerUp then
+        self.spawnPowerUp = true
+        self.powerupTimer = 0
+    end
+
+    -- spawn powerup
+    if self.spawnPowerUp then
+        self.powerup:update(dt)
+    end
+
+    -- if powerup is caught enable extra balls
+    if self.powerup:collides(self.paddle) then
+        self.ballPowerUpPickup = true
+        self.spawnPowerUp = false
+        self.powerup:reset()
+    end
+
+    -- remove powerup when out of screen
+    if self.powerup.y >= VIRTUAL_HEIGHT then
+        self.spawnPowerUp = false
+    end
+
     -- extra ball powerup pickup generate two balls
     if self.ballPowerUpPickup then
         extraball = Ball()
@@ -63,7 +90,6 @@ function PlayState:update(dt)
         extraball.dy = math.random(-50, -60)
         table.insert(self.balls, extraball)
         self.ballPowerUpPickup = false
-        self.ballPowerUpInPlay = true
     end
 
     -- update positions based on velocity
@@ -78,8 +104,8 @@ function PlayState:update(dt)
         self:updateBallLogic(ball)
     end
 
-    for k, extraBall in pairs(self.balls) do
-        if extraBall.remove then
+    for k, ball in pairs(self.balls) do
+        if ball.remove then
             table.remove(self.balls, k)
         end
     end
@@ -105,8 +131,11 @@ function PlayState:render()
         brick:renderParticles()
     end
 
+    if self.spawnPowerUp then
+        self.powerup:render()
+    end
+
     self.paddle:render()
-    --self.ball:render()
 
     for k, ball in pairs(self.balls) do
         ball:render()
