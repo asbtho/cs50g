@@ -26,17 +26,16 @@ function PlayState:enter(params)
     self.health = params.health
     self.score = params.score
     self.highScores = params.highScores
-    self.ball = params.ball
+    self.balls = params.balls
     self.level = params.level
-    self.extraBalls = {}
-    self.ballPowerUpPickup = true
+    self.ballPowerUpPickup = false
     self.ballPowerUpInPlay = false
 
     self.recoverPoints = 5000
 
     -- give ball random starting velocity
-    self.ball.dx = math.random(-200, 200)
-    self.ball.dy = math.random(-50, -60)
+    self.balls[1].dx = math.random(-200, 200)
+    self.balls[1].dy = math.random(-50, -60)
 end
 
 function PlayState:update(dt)
@@ -62,31 +61,26 @@ function PlayState:update(dt)
         extraball.y = self.paddle.y - 8
         extraball.dx = math.random(-200, 200)
         extraball.dy = math.random(-50, -60)
-        table.insert(self.extraBalls, extraball)
+        table.insert(self.balls, extraball)
         self.ballPowerUpPickup = false
         self.ballPowerUpInPlay = true
     end
 
     -- update positions based on velocity
     self.paddle:update(dt)
-    self.ball:update(dt)
-    if self.ballPowerUpInPlay then
-        for k, extraBall in pairs(self.extraBalls) do
-            extraBall:update(dt)
-        end
+    --self.ball:update(dt)
+    for k, ball in pairs(self.balls) do
+        ball:update(dt)
     end
 
-    self:updateBallLogic(self.ball)
-
-    if self.ballPowerUpInPlay then
-        for k, extraBall in pairs(self.extraBalls) do
-            self:updateBallLogic(extraBall)
-        end
+    --self:updateBallLogic(self.ball)
+    for k, ball in pairs(self.balls) do
+        self:updateBallLogic(ball)
     end
 
-    for k, extraBall in pairs(self.extraBalls) do
+    for k, extraBall in pairs(self.balls) do
         if extraBall.remove then
-            table.remove(self.extraBalls, k)
+            table.remove(self.balls, k)
         end
     end
 
@@ -112,12 +106,10 @@ function PlayState:render()
     end
 
     self.paddle:render()
-    self.ball:render()
+    --self.ball:render()
 
-    if self.ballPowerUpInPlay then
-        for k, extraBall in pairs(self.extraBalls) do
-            extraBall:render()
-        end
+    for k, ball in pairs(self.balls) do
+        ball:render()
     end
 
     renderScore(self.score)
@@ -253,7 +245,7 @@ function PlayState:updateBallLogic(inputball)
 
     -- if ball goes below bounds, revert to serve state and decrease health
     if inputball.y >= VIRTUAL_HEIGHT then
-        if inputball.extra then
+        if #self.balls > 1 then
             inputball.remove = true
         else
             self.health = self.health - 1
@@ -266,7 +258,7 @@ function PlayState:updateBallLogic(inputball)
                 highScores = self.highScores
             })
         else
-            if not inputball.extra then
+            if #self.balls == 1 then
                gStateMachine:change('serve', {
                     paddle = self.paddle,
                     bricks = self.bricks,
