@@ -47,6 +47,12 @@ paletteColors = {
         ['r'] = 251,
         ['g'] = 242,
         ['b'] = 54
+    },
+    -- gold
+    [6] = {
+        ['r'] = 251,
+        ['g'] = 242,
+        ['b'] = 54
     }
 }
 
@@ -59,6 +65,8 @@ function Brick:init(x, y)
     self.y = y
     self.width = 32
     self.height = 16
+    self.lockedBrick = false
+    self.unlocked = false
     
     -- used to determine whether this brick should be rendered
     self.inPlay = true
@@ -104,22 +112,13 @@ function Brick:hit()
     gSounds['brick-hit-2']:stop()
     gSounds['brick-hit-2']:play()
 
-    -- if we're at a higher tier than the base, we need to go down a tier
-    -- if we're already at the lowest color, else just go down a color
-    if self.tier > 0 then
-        if self.color == 1 then
-            self.tier = self.tier - 1
-            self.color = 5
-        else
-            self.color = self.color - 1
+    -- handle normal and locked bricks
+    if self.lockedBrick then
+        if self.unlocked then
+            self.inPlay = false
         end
     else
-        -- if we're in the first tier and the base color, remove brick from play
-        if self.color == 1 then
-            self.inPlay = false
-        else
-            self.color = self.color - 1
-        end
+        self:handleNormalBricks()
     end
 
     -- play a second layer sound if the brick is destroyed
@@ -149,4 +148,24 @@ end
 ]]
 function Brick:renderParticles()
     love.graphics.draw(self.psystem, self.x + 16, self.y + 8)
+end
+
+function Brick:handleNormalBricks(brick)
+    -- if we're at a higher tier than the base, we need to go down a tier
+    -- if we're already at the lowest color, else just go down a color
+    if self.tier > 0 then
+        if self.color == 1 then
+            self.tier = self.tier - 1
+            self.color = 5
+        else
+            self.color = self.color - 1
+        end
+    else
+        -- if we're in the first tier and the base color, remove brick from play
+        if self.color == 1 then
+            self.inPlay = false
+        else
+            self.color = self.color - 1
+        end
+    end
 end
