@@ -32,6 +32,7 @@ function PlayState:enter(params)
     self.spawnPowerUp = false
     self.powerup = Powerup()
     self.powerupTimer = 0
+    self.lastScore = params.score
 
     self.recoverPoints = 5000
 
@@ -77,18 +78,21 @@ function PlayState:update(dt)
     -- remove powerup when out of screen
     if self.powerup.y >= VIRTUAL_HEIGHT then
         self.spawnPowerUp = false
+        self.powerup:reset()
     end
 
     -- extra ball powerup pickup generate two balls
     if self.ballPowerUpPickup then
-        extraball = Ball()
-        extraball.skin = math.random(7)
-        extraball.extra = true
-        extraball.x = self.paddle.x + (self.paddle.width / 2) - 4
-        extraball.y = self.paddle.y - 8
-        extraball.dx = math.random(-200, 200)
-        extraball.dy = math.random(-50, -60)
-        table.insert(self.balls, extraball)
+        for i = 1, 2 do
+            extraball = Ball()
+            extraball.skin = math.random(7)
+            extraball.extra = true
+            extraball.x = self.paddle.x + (self.paddle.width / 2) - 4
+            extraball.y = self.paddle.y - 8
+            extraball.dx = math.random(-200, 200)
+            extraball.dy = math.random(-50, -60)
+            table.insert(self.balls, extraball)
+        end
         self.ballPowerUpPickup = false
     end
 
@@ -162,6 +166,17 @@ function PlayState:checkVictory()
 end
 
 function PlayState:updateBallLogic(inputball)
+    -- increase size if points over 
+    if self.score - self.lastScore > 800 and self.paddle.size < 3 then
+        self.paddle.width = self.paddle.width + 32
+        self.paddle.size = self.paddle.size + 1
+        self.lastScore = self.score
+    end
+    if self.score - self.lastScore > 10000 and self.paddle.size < 4 then
+        self.paddle.width = 128
+        self.paddle.size = 4
+    end
+
     if inputball:collides(self.paddle) then
         -- raise ball above paddle in case it goes below it, then reverse dy
         inputball.y = self.paddle.y - 8
@@ -278,6 +293,8 @@ function PlayState:updateBallLogic(inputball)
             inputball.remove = true
         else
             self.health = self.health - 1
+            self.paddle.width = 32
+            self.paddle.size = 1
         end
         gSounds['hurt']:play()
 
