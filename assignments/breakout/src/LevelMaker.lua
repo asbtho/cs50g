@@ -33,6 +33,8 @@ LevelMaker = Class{}
 function LevelMaker.createMap(level)
     local bricks = {}
 
+    local generatedLockedBrick = false
+
     -- randomly choose the number of rows
     local numRows = math.random(1, 5)
 
@@ -71,6 +73,8 @@ function LevelMaker.createMap(level)
         local solidColor = math.random(1, highestColor)
         local solidTier = math.random(0, highestTier)
 
+        local generateLockedBrick = math.random(6)
+
         for x = 1, numCols do
             -- if skipping is turned on and we're on a skip iteration...
             if skipPattern and skipFlag then
@@ -108,9 +112,21 @@ function LevelMaker.createMap(level)
 
             -- if not alternating and we made it here, use the solid color/tier
             if not alternatePattern then
-                b.color = solidColor
-                b.tier = solidTier
-            end 
+                if generatedLockedBrick then
+                    b.color = solidColor
+                    b.tier = solidTier
+                else
+                    if generateLockedBrick == 1 then
+                        b.color = 6
+                        b.tier = 1
+                        b.lockedBrick = true
+                        generatedLockedBrick = true
+                    else
+                        b.color = solidColor
+                        b.tier = solidTier
+                    end
+                end
+            end
 
             table.insert(bricks, b)
 

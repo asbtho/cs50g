@@ -1,6 +1,6 @@
  - Add a powerup to the game that spawns two extra Balls.
-    - WIP
+    - DONE
  - Grow and shrink the Paddle when the player gains enough points or loses a life.
-    - 
+    - DONE
  - Add a locked Brick that will only open when the player collects a second new powerup, a key, which should only spawn when such a Brick exists and randomly as per the Ball powerup.
     - 

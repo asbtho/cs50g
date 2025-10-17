@@ -55,7 +55,16 @@ end
     we have to return a subset of GenerateQuads.
 ]]
 function GenerateQuadsBricks(atlas)
-    return table.slice(GenerateQuads(atlas, 32, 16), 1, 21)
+    local bricks = table.slice(GenerateQuads(atlas, 32, 16), 1, 21)
+
+    -- add locked brick
+    local quads = {}
+    local x = 160
+    local y = 48
+    quads[1] = love.graphics.newQuad(x, y, 32, 16, atlas:getDimensions())
+    table.insert(bricks, quads[1])
+
+    return bricks
 end
 
 --[[
