@@ -44,6 +44,16 @@ function Board:initializeTiles()
     end
 end
 
+function Board:update(dt)
+    for y = 1, #self.tiles do
+        for x = 1, #self.tiles[1] do
+            if self.tiles[y][x].shiny then
+                self.tiles[y][x]:update(dt)
+            end
+        end
+    end
+end
+
 --[[
     Goes left to right, top to bottom in the board, calculating matches by counting consecutive
     tiles of the same color. Doesn't need to check the last tile in every row or column if the 

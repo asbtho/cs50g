@@ -105,6 +105,8 @@ function PlayState:update(dt)
         })
     end
 
+    self.board:update(dt)
+
     if self.canInput then
         -- move cursor around based on bounds of grid, playing sounds
         if love.keyboard.wasPressed('up') then
