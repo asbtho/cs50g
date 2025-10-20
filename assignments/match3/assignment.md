@@ -5,7 +5,7 @@
     - DONE
 
  - Creat random shiny versions of blocks that will destroy an entire row on match, granting points for each block in the row.
-    - |
+    - DONE (could optimize particle system update)
 
  - Only allow swapping when it results in a match. If there are no matches available to perform, reset the board.
     - |
