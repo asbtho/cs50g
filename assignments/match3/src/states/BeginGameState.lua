@@ -70,6 +70,7 @@ function BeginGameState:enter(def)
 end
 
 function BeginGameState:update(dt)
+    self.board:update(dt)
     Timer.update(dt)
 end
 
