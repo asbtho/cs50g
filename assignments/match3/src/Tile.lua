@@ -13,7 +13,7 @@
 
 Tile = Class{}
 
-function Tile:init(x, y, color, variety)
+function Tile:init(x, y, color, variety, shiny)
     
     -- board positions
     self.gridX = x
@@ -26,7 +26,7 @@ function Tile:init(x, y, color, variety)
     -- tile appearance/points
     self.color = color
     self.variety = variety
-    self.shiny = true
+    self.shiny = shiny
 
     if self.shiny then
             -- particle system belonging to the brick, emitted on hit
