@@ -13,6 +13,8 @@
 
 Board = Class{}
 
+TILE_SET_AMOUNT = 6
+
 function Board:init(x, y, level)
     self.x = x
     self.y = y
@@ -34,11 +36,11 @@ function Board:initializeTiles()
         for tileX = 1, 8 do
             if self.shinyGenerated then
                 -- create a new tile at X,Y with a random color and variety, varieties go up for each level
-                table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(18), math.random(math.min(6, self.level)), false))
+                table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(TILE_SET_AMOUNT), math.random(math.min(6, self.level)), false))
             else
                 -- 1/10 chance of generating shiny
                 local shiny = randomShiny()
-                table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(18), math.random(math.min(6, self.level)), shiny))
+                table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(TILE_SET_AMOUNT), math.random(math.min(6, self.level)), shiny))
                 if shiny then
                     self.shinyGenerated = true
                 end
@@ -215,6 +217,10 @@ function Board:removeMatches()
     self.matches = nil
 end
 
+function Board:clearMatches()
+    self.matches = {}
+end
+
 --[[
     Shifts down all of the tiles that now have spaces below them, then returns a table that
     contains tweening information for these new tiles.
@@ -280,7 +286,7 @@ function Board:getFallingTiles()
             if not tile then
 
                 -- new tile with random color and variety, varieties go up for each level
-                local tile = Tile(x, y, math.random(18), math.random(math.min(6, self.level)), false)
+                local tile = Tile(x, y, math.random(TILE_SET_AMOUNT), math.random(math.min(6, self.level)), false)
                 
                 tile.y = -32
                 self.tiles[y][x] = tile
