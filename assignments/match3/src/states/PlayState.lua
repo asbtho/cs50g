@@ -162,16 +162,37 @@ function PlayState:update(dt)
 
                 self.board.tiles[newTile.gridY][newTile.gridX] = newTile
 
-                -- tween coordinates between the two so they swap
-                Timer.tween(0.1, {
-                    [self.highlightedTile] = {x = newTile.x, y = newTile.y},
-                    [newTile] = {x = self.highlightedTile.x, y = self.highlightedTile.y}
-                })
-                
-                -- once the swap is finished, we can tween falling blocks as needed
-                :finish(function()
-                    self:calculateMatches()
-                end)
+                if self:checkForMatches() then
+                    -- tween coordinates between the two so they swap
+                    Timer.tween(0.1, {
+                        [self.highlightedTile] = {x = newTile.x, y = newTile.y},
+                        [newTile] = {x = self.highlightedTile.x, y = self.highlightedTile.y}
+                    })
+                    -- once the swap is finished, we can tween falling blocks as needed
+                    :finish(function()
+                        self:calculateMatches()
+                    end)
+                else
+                    -- Swap back grid positions of tiles
+                    local tempX = self.highlightedTile.gridX
+                    local tempY = self.highlightedTile.gridY
+
+                    local newTile = self.board.tiles[newTile.gridY][newTile.gridX]
+
+                    self.highlightedTile.gridX = newTile.gridX
+                    self.highlightedTile.gridY = newTile.gridY
+                    newTile.gridX = tempX
+                    newTile.gridY = tempY
+
+                    -- swap tiles in the tiles table
+                    self.board.tiles[self.highlightedTile.gridY][self.highlightedTile.gridX] =
+                        self.highlightedTile
+
+                    self.board.tiles[newTile.gridY][newTile.gridX] = newTile
+
+                    self.highlightedTile = nil
+                    gSounds['error']:play()
+                end                
             end
         end
     end
@@ -225,6 +246,19 @@ function PlayState:calculateMatches()
     else
         self.canInput = true
     end
+end
+
+
+function PlayState:checkForMatches()
+    -- if we have any matches, remove them and tween the falling blocks that result
+    local matches = self.board:calculateMatches()
+    
+    if matches then
+        self.board:clearMatches()
+        return true
+    end
+
+    return false
 end
 
 function PlayState:render()
