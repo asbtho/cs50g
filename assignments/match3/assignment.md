@@ -8,7 +8,7 @@
     - DONE (could optimize particle system update)
 
  - Only allow swapping when it results in a match. If there are no matches available to perform, reset the board.
-    - |
+    - DONE
 
  - (Optional) Implement matching using the mouse. (Hint: you’ll need push:toGame(x,y); see the push library’s documentation here for details!
     - |
