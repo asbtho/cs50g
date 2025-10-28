@@ -23,6 +23,10 @@ love.graphics.setDefaultFilter('nearest', 'nearest')
 require 'src/Dependencies'
 
 function love.load()
+    -- init time
+    min_dt = 1/60
+    next_time = love.timer.getTime() + min_dt
+
     love.graphics.setFont(gFonts['medium'])
     love.window.setTitle('Super 50 Bros.')
 
@@ -65,6 +69,8 @@ function love.keyboard.wasPressed(key)
 end
 
 function love.update(dt)
+    next_time = next_time + min_dt
+
     gStateMachine:update(dt)
 
     love.keyboard.keysPressed = {}
@@ -74,4 +80,11 @@ function love.draw()
     push:start()
     gStateMachine:render()
     push:finish()
+
+    local cur_time = love.timer.getTime()
+    if next_time <= cur_time then
+        next_time = cur_time
+        return
+    end
+    love.timer.sleep(next_time - cur_time)
 end
