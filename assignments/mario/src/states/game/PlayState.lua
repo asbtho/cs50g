@@ -19,7 +19,7 @@ function PlayState:init()
     self.gravityAmount = 6
 
     self.player = Player({
-        x = 0, y = 0,
+        x = self.tileMap.spawnPosition, y = 0,
         width = 16, height = 20,
         texture = 'green-alien',
         stateMachine = StateMachine {
@@ -79,6 +79,9 @@ function PlayState:render()
     love.graphics.print(tostring(self.player.score), 5, 5)
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.print(tostring(self.player.score), 4, 4)
+
+    -- simple FPS display across all states
+    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), VIRTUAL_WIDTH - 65, 5)
 end
 
 function PlayState:updateCamera()

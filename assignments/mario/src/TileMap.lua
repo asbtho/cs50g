@@ -11,6 +11,7 @@ function TileMap:init(width, height)
     self.width = width
     self.height = height
     self.tiles = {}
+    self.spawnPosition = 0
 end
 
 --[[
