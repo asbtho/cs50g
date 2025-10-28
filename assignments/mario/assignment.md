@@ -1,5 +1,5 @@
 - Program it such that when the player is dropped into the level, they’re always done so above solid ground.
-    - .
+    - DONE
 
 - In LevelMaker.lua, generate a random-colored key and lock block (taken from keys_and_locks.png in the graphics folder of the distro). The key should unlock the block when the player collides with it, triggering the block to disappear.
     - .
