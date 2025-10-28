@@ -22,6 +22,10 @@ function LevelMaker.generate(width, height)
     local tileset = math.random(20)
     local topperset = math.random(20)
 
+    -- Whether we set spawnPosition over solid ground
+    local spawnX = 0
+    local spawnPositionSet = false
+
     -- insert blank tables into tiles for later access
     for x = 1, height do
         table.insert(tiles, {})
@@ -38,13 +42,19 @@ function LevelMaker.generate(width, height)
         end
 
         -- chance to just be emptiness
-        if math.random(7) == 1 then
+        if math.random(3) == 1 then
             for y = 7, height do
                 table.insert(tiles[y],
                     Tile(x, y, tileID, nil, tileset, topperset))
             end
         else
             tileID = TILE_ID_GROUND
+
+            -- if we haven't set spawnPosition over solid ground yet, set it on first viable x
+            if not spawnPositionSet then
+                spawnX = (x - 1) * TILE_SIZE
+                spawnPositionSet = true
+            end
 
             -- height at which we would spawn a potential jump block
             local blockHeight = 4
@@ -163,6 +173,7 @@ function LevelMaker.generate(width, height)
 
     local map = TileMap(width, height)
     map.tiles = tiles
+    map.spawnPosition = spawnX
     
     return GameLevel(entities, objects, map)
 end
