@@ -25,6 +25,8 @@ function LevelMaker.generate(width, height)
     -- Whether we set spawnPosition over solid ground
     local spawnX = 0
     local spawnPositionSet = false
+    local keySpawned = false
+    local lockSpawned = false
 
     -- insert blank tables into tiles for later access
     for x = 1, height do
@@ -34,6 +36,7 @@ function LevelMaker.generate(width, height)
     -- column by column generation instead of row; sometimes better for platformers
     for x = 1, width do
         local tileID = TILE_ID_EMPTY
+        local blockSpawned = false
         
         -- lay out the empty space
         for y = 1, 6 do
@@ -42,7 +45,7 @@ function LevelMaker.generate(width, height)
         end
 
         -- chance to just be emptiness
-        if math.random(3) == 1 then
+        if math.random(7) == 1 then
             for y = 7, height do
                 table.insert(tiles[y],
                     Tile(x, y, tileID, nil, tileset, topperset))
@@ -105,8 +108,69 @@ function LevelMaker.generate(width, height)
                 )
             end
 
+            -- chance to spawn a key
+            if ( x > 10 and math.random(30) == 1 and not keySpawned and not blockSpawned) or ( x == width and not keySpawned and not blockSpawned ) then
+                keySpawned = true
+                blockSpawned = true
+                table.insert(objects,
+                    GameObject {
+                        texture = 'keys-and-locks',
+                        x = (x - 1) * TILE_SIZE,
+                        y = (blockHeight - 1) * TILE_SIZE - 4,
+                        width = 16,
+                        height = 16,
+                        frame = math.random(1, 4),
+                        collidable = true,
+                        consumable = true,
+                        solid = false,
+
+                        onConsume = function(player, object)
+                            gSounds['pickup']:play()
+                            player.key = true
+                        end
+                    }
+                )
+            end
+
+            -- chance to spawn a locked block
+            if ( x > 10 and math.random(30) == 1 and not lockSpawned and not blockSpawned ) or ( x == width-1 and not lockSpawned and not blockSpawned )  then
+                lockSpawned = true
+                blockSpawned = true
+                table.insert(objects,
+                    GameObject {
+                        texture = 'keys-and-locks',
+                        x = (x - 1) * TILE_SIZE,
+                        y = (blockHeight - 1) * TILE_SIZE,
+                        width = 16,
+                        height = 16,
+
+                        -- make it a random variant
+                        frame = math.random(5, 8),
+                        collidable = true,
+                        consumable = false,
+                        hit = false,
+                        solid = true,
+
+                        -- collision function takes itself
+                        onCollide = function(player, obj)
+                            if player.key then
+                                obj.solid = false
+                                obj.consumable = true
+                            end
+
+                            gSounds['empty-block']:play()
+                        end,
+
+                        onConsume = function(player, object)
+                            gSounds['pickup']:play()
+                        end
+                    }
+                )
+            end
+
             -- chance to spawn a block
-            if math.random(10) == 1 then
+            if math.random(10) == 1 and not blockSpawned then
+                blockSpawned = true
                 table.insert(objects,
 
                     -- jump block
@@ -168,6 +232,8 @@ function LevelMaker.generate(width, height)
                     }
                 )
             end
+
+            blockSpawned = false
         end
     end
 
