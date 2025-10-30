@@ -29,12 +29,26 @@ function PlayState:init()
             ['falling'] = function() return PlayerFallingState(self.player, self.gravityAmount) end
         },
         map = self.tileMap,
-        level = self.level
+        level = self.level,
     })
 
     self:spawnEnemies()
 
     self.player:changeState('falling')
+end
+
+function PlayState:enter(params)
+    self.levelProgress = params.levelProgress
+    self.playersScore = params.playersScore
+    self.player.levelProgress = self.levelProgress
+    self.player.score = self.playersScore
+    self.level = LevelMaker.generate(100 + (self.levelProgress * 10), 10)
+    self.tileMap = self.level.tileMap
+    self.player.x = self.tileMap.spawnPosition
+    self.player.map = self.tileMap
+    self.player.level = self.level
+
+    self:spawnEnemies()
 end
 
 function PlayState:update(dt)

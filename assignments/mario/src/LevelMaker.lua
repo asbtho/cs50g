@@ -27,6 +27,8 @@ function LevelMaker.generate(width, height)
     local spawnPositionSet = false
     local keySpawned = false
     local lockSpawned = false
+    local flagPositionX = 1
+    local flagPositionSet = false
 
     -- insert blank tables into tiles for later access
     for x = 1, height do
@@ -109,7 +111,7 @@ function LevelMaker.generate(width, height)
             end
 
             -- chance to spawn a key
-            if ( x > 10 and math.random(30) == 1 and not keySpawned and not blockSpawned) or ( x == width and not keySpawned and not blockSpawned ) then
+            if ( x > 10 and math.random(20) == 1 and not keySpawned and not blockSpawned) or ( x == width and not keySpawned and not blockSpawned ) then
                 keySpawned = true
                 blockSpawned = true
                 table.insert(objects,
@@ -133,7 +135,14 @@ function LevelMaker.generate(width, height)
             end
 
             -- chance to spawn a locked block
-            if ( x > 10 and math.random(30) == 1 and not lockSpawned and not blockSpawned ) or ( x == width-1 and not lockSpawned and not blockSpawned )  then
+            if ( math.random(20) == 1 and not blockSpawned and not flagPositionSet ) or ( x == width-1 and not blockSpawned and not flagPositionSet ) then
+                blockSpawned = true
+                flagPositionSet = true
+                flagPositionX = x
+            end
+
+            -- chance to spawn a locked block
+            if ( x > 10 and math.random(20) == 1 and not lockSpawned and not blockSpawned ) or ( x == width-1 and not lockSpawned and not blockSpawned )  then
                 lockSpawned = true
                 blockSpawned = true
                 table.insert(objects,
@@ -156,6 +165,38 @@ function LevelMaker.generate(width, height)
                             if player.key then
                                 obj.solid = false
                                 obj.consumable = true
+
+                                local flags = {5, 14, 23, 25}
+                                local flagHeight = 1
+                                local offset = 0
+                                for i = 1, 4 do
+                                    if i == 4 then
+                                        flagHeight = flagHeight - 1
+                                        offset = 8
+                                    end
+                                    table.insert(objects, 
+                                        GameObject {
+                                            texture = 'flags',
+                                            x = (flagPositionX - 1) * TILE_SIZE + offset,
+                                            y = (7 - 1 - flagHeight) * TILE_SIZE,
+                                            width = 8,
+                                            height = 16,
+                                            frame = flags[i],
+                                            collidable = false,
+                                            consumable = true,
+                                            solid = false,
+
+                                            onConsume = function(obj)
+                                                gSounds['pickup']:play()
+                                                gStateMachine:change('play', {
+                                                    levelProgress = player.levelProgress + 1,
+                                                    playersScore = player.score
+                                                })
+                                            end
+                                        }
+                                    )
+                                    flagHeight = flagHeight + 1
+                                end   
                             end
 
                             gSounds['empty-block']:play()
