@@ -158,6 +158,16 @@ function Room:update(dt)
 
         -- remove entity from the table if health is <= 0
         if entity.health <= 0 then
+            if not entity.droppedHeart then
+                table.insert(self.objects, 
+                    GameObject(
+                        GAME_OBJECT_DEFS['heart'],
+                        entity.x + 4,
+                        entity.y + 4
+                    )
+                )
+                entity.droppedHeart = true
+            end
             entity.dead = true
         elseif not entity.dead then
             entity:processAI({room = self}, dt)

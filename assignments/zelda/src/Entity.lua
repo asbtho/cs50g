@@ -38,6 +38,7 @@ function Entity:init(def)
     self.flashTimer = 0
 
     self.dead = false
+    self.droppedHeart = false
 end
 
 function Entity:createAnimations(animations)
