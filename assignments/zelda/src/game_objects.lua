@@ -24,6 +24,21 @@ GAME_OBJECT_DEFS = {
             }
         }
     },
+    ['heart'] = {
+        type = 'heart',
+        texture = 'heartssmall',
+        frame = 5,
+        width = 8,
+        height = 8,
+        solid = false,
+        defaultState = 'unpicked',
+        states = {
+            ['unpicked'] = {
+            },
+            ['picked'] = {
+            }
+        }
+    },
     ['pot'] = {
         -- TODO
     }
