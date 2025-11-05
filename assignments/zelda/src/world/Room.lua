@@ -158,14 +158,23 @@ function Room:update(dt)
 
         -- remove entity from the table if health is <= 0
         if entity.health <= 0 then
-            if not entity.droppedHeart then
-                table.insert(self.objects, 
-                    GameObject(
-                        GAME_OBJECT_DEFS['heart'],
-                        entity.x + 4,
-                        entity.y + 4
-                    )
+            if not entity.heartDropChanceGenerated then
+                entity:generateHeartDropChance()
+            end
+            if not entity.droppedHeart and entity.heartDropChance == 1 then
+                local newHeart = GameObject(
+                    GAME_OBJECT_DEFS['heart'],
+                    entity.x + 4,
+                    entity.y + 4
                 )
+                newHeart.onCollide = function()
+                    if newHeart.state == "unpicked" then
+                        self.player.health = 6
+                        newHeart.state = "picked"
+                        gSounds['powerup']:play()
+                    end
+                end
+                table.insert(self.objects, newHeart)
                 entity.droppedHeart = true
             end
             entity.dead = true
@@ -213,7 +222,9 @@ function Room:render()
     end
 
     for k, object in pairs(self.objects) do
-        object:render(self.adjacentOffsetX, self.adjacentOffsetY)
+        if object.state ~= "picked" then
+            object:render(self.adjacentOffsetX, self.adjacentOffsetY)
+        end
     end
 
     for k, entity in pairs(self.entities) do

@@ -39,6 +39,8 @@ function Entity:init(def)
 
     self.dead = false
     self.droppedHeart = false
+    self.heartDropChance = 0
+    self.heartDropChanceGenerated = false
 end
 
 function Entity:createAnimations(animations)
@@ -65,6 +67,11 @@ end
 
 function Entity:damage(dmg)
     self.health = self.health - dmg
+end
+
+function Entity:generateHeartDropChance()
+    self.heartDropChance = math.random(10)
+    self.heartDropChanceGenerated = true
 end
 
 function Entity:goInvulnerable(duration)
