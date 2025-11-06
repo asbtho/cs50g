@@ -8,9 +8,11 @@
 
 Room = Class{}
 
-function Room:init(player)
+function Room:init(player, dungeon)
     self.width = MAP_WIDTH
     self.height = MAP_HEIGHT
+
+    self.dungeon = dungeon
 
     self.tiles = {}
     self:generateWallsAndFloors()
@@ -68,8 +70,8 @@ function Room:generateEntities()
         })
 
         self.entities[i].stateMachine = StateMachine {
-            ['walk'] = function() return EntityWalkState(self.entities[i]) end,
-            ['idle'] = function() return EntityIdleState(self.entities[i]) end
+            ['walk'] = function() return EntityWalkState(self.entities[i], self.dungeon) end,
+            ['idle'] = function() return EntityIdleState(self.entities[i], self.dungeon) end
         }
 
         self.entities[i]:changeState('walk')
