@@ -52,6 +52,7 @@ function PlayerLiftPotState:update(dt)
     for k, object in pairs(self.dungeon.currentRoom.objects) do
         if object:collides(self.potHitbox) then
             gSounds['pickup']:play()
+            self.player:changeState('idle-pot')
         end
     end
 
