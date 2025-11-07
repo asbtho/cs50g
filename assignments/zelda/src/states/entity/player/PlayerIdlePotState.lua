@@ -14,6 +14,18 @@ function PlayerIdlePotState:enter(params)
     self.entity.offsetY = 5
     self.entity.offsetX = 0
 
+    self.potObject = nil
+
+    for k, object in pairs(self.dungeon.currentRoom.objects) do
+        if object.state == 'pickedup' then
+            self.potObject = object
+        end
+    end
+
+    self.potObject.x = self.entity.x
+    self.potObject.y = self.entity.y
+
+
     self.entity:changeAnimation('pot-idle-' .. self.entity.direction)
 end
 

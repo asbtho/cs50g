@@ -8,6 +8,8 @@ function PlayerLiftPotState:init(player, dungeon)
     self.player.offsetY = 5
     self.player.offsetX = 0
 
+    self.potObject = nil
+
     -- create hitbox based on where the player is and facing
     local direction = self.player.direction
     local hitboxX, hitboxY, hitboxWidth, hitboxHeight
@@ -50,8 +52,9 @@ function PlayerLiftPotState:update(dt)
     
     -- check if hitbox collides with any entities in the scene
     for k, object in pairs(self.dungeon.currentRoom.objects) do
-        if object:collides(self.potHitbox) then
+        if object:collides(self.potHitbox) and object.type == 'pot' and object.state == 'notpickedup' then
             gSounds['pickup']:play()
+            object.state = 'pickedup'
             self.player:changeState('idle-pot')
         end
     end

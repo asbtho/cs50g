@@ -37,7 +37,7 @@ function EntityWalkState:update(dt)
         end
         -- check for colliding into solid objects
         for k, object in pairs(self.dungeon.currentRoom.objects) do
-            if self.entity:collides(object) and object.solid then
+            if self.entity:collides(object) and object.solid and object.state ~= 'pickedup' then
                 self.entity.x = self.entity.x + 1
                 self.bumped = true
             end
@@ -51,7 +51,7 @@ function EntityWalkState:update(dt)
         end
         -- check for colliding into solid objects
         for k, object in pairs(self.dungeon.currentRoom.objects) do
-            if self.entity:collides(object) and object.solid then
+            if self.entity:collides(object) and object.solid and object.state ~= 'pickedup' then
                 self.entity.x = self.entity.x - 1
                 self.bumped = true
             end
@@ -65,7 +65,7 @@ function EntityWalkState:update(dt)
         end
         -- check for colliding into solid objects
         for k, object in pairs(self.dungeon.currentRoom.objects) do
-            if self.entity:collides(object) and object.solid then
+            if self.entity:collides(object) and object.solid and object.state ~= 'pickedup' then
                 self.entity.y = self.entity.y + 1
                 self.bumped = true
             end
@@ -82,7 +82,7 @@ function EntityWalkState:update(dt)
         end
         -- check for colliding into solid objects
         for k, object in pairs(self.dungeon.currentRoom.objects) do
-            if self.entity:collides(object) and object.solid then
+            if self.entity:collides(object) and object.solid and object.state ~= 'pickedup' then
                 self.entity.y = self.entity.y - 1
                 self.bumped = true
             end
