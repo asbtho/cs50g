@@ -224,6 +224,12 @@ function Room:update(dt)
             object:onCollide()
         end
     end
+
+    for k, object in pairs(self.objects) do
+        if object.removed then
+            table.remove(self.objects, object)
+        end
+    end
 end
 
 function Room:render()
@@ -276,6 +282,12 @@ function Room:render()
     
     if self.player then
         self.player:render()
+    end
+
+    for k, object in pairs(self.objects) do
+        if object.state == "pickedup" then
+            object:render(self.adjacentOffsetX, self.adjacentOffsetY)
+        end
     end
 
     love.graphics.setStencilTest()

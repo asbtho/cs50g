@@ -23,8 +23,7 @@ function PlayerIdlePotState:enter(params)
     end
 
     self.potObject.x = self.entity.x
-    self.potObject.y = self.entity.y
-
+    self.potObject.y = self.entity.y - 10
 
     self.entity:changeAnimation('pot-idle-' .. self.entity.direction)
 end
@@ -33,5 +32,12 @@ function PlayerIdlePotState:update(dt)
     if love.keyboard.isDown('left') or love.keyboard.isDown('right') or
        love.keyboard.isDown('up') or love.keyboard.isDown('down') then
         self.entity:changeState('walk-pot')
+    end
+
+    if love.keyboard.wasPressed('e') then
+        self.potObject.projectile = true
+        self.potObject.projectileDirection = self.entity.direction
+        self.potObject:fire()
+        self.entity:changeState('idle')
     end
 end

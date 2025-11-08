@@ -23,7 +23,16 @@ function EntityWalkState:init(entity, dungeon)
 end
 
 function EntityWalkState:update(dt)
-    
+    -- check for colliding into solid objects
+    for k, object in pairs(self.dungeon.currentRoom.objects) do
+        if self.entity:collides(object) and object.projectile then
+            self.entity:damage(1)
+            gSounds['hit-enemy']:play()
+            object:breakPot()
+            self.bumped = true
+        end
+    end
+
     -- assume we didn't hit a wall
     self.bumped = false
 

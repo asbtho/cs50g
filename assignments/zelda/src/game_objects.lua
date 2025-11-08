@@ -51,6 +51,10 @@ GAME_OBJECT_DEFS = {
             ['notpickedup'] = {
             },
             ['pickedup'] = {
+            },
+            ['destroyed'] = {
+                frame = 52,
+                solid = false
             }
         }
     }
