@@ -6,41 +6,58 @@
     cogden@cs50.harvard.edu
 ]]
 
-PlayerWalkState = Class{__includes = EntityWalkState}
+PlayerWalkPotState = Class{__includes = EntityWalkState}
 
-function PlayerWalkState:init(player, dungeon)
+function PlayerWalkPotState:init(player, dungeon)
     self.entity = player
     self.dungeon = dungeon
 
     -- render offset for spaced character sprite; negated in render function of state
     self.entity.offsetY = 5
     self.entity.offsetX = 0
+
+    self.potObject = nil
+
+    self.entity:changeAnimation('pot-carry-' .. self.entity.direction)
 end
 
-function PlayerWalkState:update(dt)
-    if love.keyboard.isDown('left') then
-        self.entity.direction = 'left'
-        self.entity:changeAnimation('walk-left')
-    elseif love.keyboard.isDown('right') then
-        self.entity.direction = 'right'
-        self.entity:changeAnimation('walk-right')
-    elseif love.keyboard.isDown('up') then
-        self.entity.direction = 'up'
-        self.entity:changeAnimation('walk-up')
-    elseif love.keyboard.isDown('down') then
-        self.entity.direction = 'down'
-        self.entity:changeAnimation('walk-down')
-    else
-        self.entity:changeState('idle')
+function PlayerWalkPotState:enter(params)
+    for k, object in pairs(self.dungeon.currentRoom.objects) do
+        if object.state == 'pickedup' then
+            self.potObject = object
+        end
     end
 
-    if love.keyboard.wasPressed('space') then
-        self.entity:changeState('swing-sword')
+    self.potObject.x = self.entity.x
+    self.potObject.y = self.entity.y - 10
+end
+
+function PlayerWalkPotState:update(dt)
+    if love.keyboard.isDown('left') then
+        self.entity.direction = 'left'
+        self.entity:changeAnimation('pot-carry-left')
+    elseif love.keyboard.isDown('right') then
+        self.entity.direction = 'right'
+        self.entity:changeAnimation('pot-carry-right')
+    elseif love.keyboard.isDown('up') then
+        self.entity.direction = 'up'
+        self.entity:changeAnimation('pot-carry-up')
+    elseif love.keyboard.isDown('down') then
+        self.entity.direction = 'down'
+        self.entity:changeAnimation('pot-carry-down')
+    else
+        self.entity:changeState('idle-pot')
     end
 
     if love.keyboard.wasPressed('e') then
-        self.entity:changeState('lift-pot')
+        self.potObject.projectile = true
+        self.potObject.projectileDirection = self.entity.direction
+        self.potObject:fire()
+        self.entity:changeState('walk')
     end
+
+    self.potObject.x = self.entity.x
+    self.potObject.y = self.entity.y - 10
 
     -- perform base collision detection against walls
     EntityWalkState.update(self, dt)
@@ -55,7 +72,7 @@ function PlayerWalkState:update(dt)
             -- check for colliding into doorway to transition
             for k, doorway in pairs(self.dungeon.currentRoom.doorways) do
                 if self.entity:collides(doorway) and doorway.open then
-
+                    self.entity:changeState('walk')
                     -- shift entity to center of door to avoid phasing through wall
                     self.entity.y = doorway.y + 4
                     Event.dispatch('shift-left')
@@ -72,7 +89,7 @@ function PlayerWalkState:update(dt)
             -- check for colliding into doorway to transition
             for k, doorway in pairs(self.dungeon.currentRoom.doorways) do
                 if self.entity:collides(doorway) and doorway.open then
-
+                    self.entity:changeState('walk')
                     -- shift entity to center of door to avoid phasing through wall
                     self.entity.y = doorway.y + 4
                     Event.dispatch('shift-right')
@@ -89,7 +106,7 @@ function PlayerWalkState:update(dt)
             -- check for colliding into doorway to transition
             for k, doorway in pairs(self.dungeon.currentRoom.doorways) do
                 if self.entity:collides(doorway) and doorway.open then
-
+                    self.entity:changeState('walk')
                     -- shift entity to center of door to avoid phasing through wall
                     self.entity.x = doorway.x + 8
                     Event.dispatch('shift-up')
@@ -106,7 +123,7 @@ function PlayerWalkState:update(dt)
             -- check for colliding into doorway to transition
             for k, doorway in pairs(self.dungeon.currentRoom.doorways) do
                 if self.entity:collides(doorway) and doorway.open then
-
+                    self.entity:changeState('walk')
                     -- shift entity to center of door to avoid phasing through wall
                     self.entity.x = doorway.x + 8
                     Event.dispatch('shift-down')

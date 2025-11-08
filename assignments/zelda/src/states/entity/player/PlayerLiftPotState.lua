@@ -1,20 +1,14 @@
---[[
-    GD50
-    Legend of Zelda
+PlayerLiftPotState = Class{__includes = BaseState}
 
-    Author: Colton Ogden
-    cogden@cs50.harvard.edu
-]]
-
-PlayerSwingSwordState = Class{__includes = BaseState}
-
-function PlayerSwingSwordState:init(player, dungeon)
+function PlayerLiftPotState:init(player, dungeon)
     self.player = player
     self.dungeon = dungeon
 
     -- render offset for spaced character sprite
     self.player.offsetY = 5
-    self.player.offsetX = 8
+    self.player.offsetX = 0
+
+    self.potObject = nil
 
     -- create hitbox based on where the player is and facing
     local direction = self.player.direction
@@ -42,30 +36,26 @@ function PlayerSwingSwordState:init(player, dungeon)
         hitboxY = self.player.y + self.player.height
     end
 
-    -- separate hitbox for the player's sword; will only be active during this state
-    self.swordHitbox = Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight)
+    -- separate hitbox for the player's interaction
+    self.potHitbox = Hitbox(hitboxX, hitboxY, hitboxWidth, hitboxHeight)
 
-    -- sword-left, sword-up, etc
-    self.player:changeAnimation('sword-' .. self.player.direction)
+    -- pot-left, pot-up, etc
+    self.player:changeAnimation('pot-lift-' .. self.player.direction)
 end
 
-function PlayerSwingSwordState:enter(params)
-
-    -- restart sword swing sound for rapid swinging
-    gSounds['sword']:stop()
-    gSounds['sword']:play()
-
-    -- restart sword swing animation
+function PlayerLiftPotState:enter(params)
+    -- restart pot swing animation
     self.player.currentAnimation:refresh()
 end
 
-function PlayerSwingSwordState:update(dt)
+function PlayerLiftPotState:update(dt)
     
     -- check if hitbox collides with any entities in the scene
-    for k, entity in pairs(self.dungeon.currentRoom.entities) do
-        if entity:collides(self.swordHitbox) then
-            entity:damage(1)
-            gSounds['hit-enemy']:play()
+    for k, object in pairs(self.dungeon.currentRoom.objects) do
+        if object:collides(self.potHitbox) and object.type == 'pot' and object.state == 'notpickedup' then
+            gSounds['pickup']:play()
+            object.state = 'pickedup'
+            self.player:changeState('idle-pot')
         end
     end
 
@@ -74,25 +64,19 @@ function PlayerSwingSwordState:update(dt)
         self.player.currentAnimation.timesPlayed = 0
         self.player:changeState('idle')
     end
-
-    -- allow us to change into this state afresh if we swing within it, rapid swinging
-    if love.keyboard.wasPressed('space') then
-        self.player:changeState('swing-sword')
-    end
 end
 
-function PlayerSwingSwordState:render()
+function PlayerLiftPotState:render()
     local anim = self.player.currentAnimation
     love.graphics.draw(gTextures[anim.texture], gFrames[anim.texture][anim:getCurrentFrame()],
         math.floor(self.player.x - self.player.offsetX), math.floor(self.player.y - self.player.offsetY))
-
     --
     -- debug for player and hurtbox collision rects VV
     --
 
     -- love.graphics.setColor(255, 0, 255, 255)
     -- love.graphics.rectangle('line', self.player.x, self.player.y, self.player.width, self.player.height)
-    -- love.graphics.rectangle('line', self.swordHurtbox.x, self.swordHurtbox.y,
-    --     self.swordHurtbox.width, self.swordHurtbox.height)
+    -- love.graphics.rectangle('line', self.potHurtbox.x, self.potHurtbox.y,
+    --     self.potHurtbox.width, self.potHurtbox.height)
     -- love.graphics.setColor(255, 255, 255, 255)
 end

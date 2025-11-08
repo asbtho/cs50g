@@ -30,6 +30,9 @@ require 'src/states/entity/EntityWalkState'
 require 'src/states/entity/player/PlayerIdleState'
 require 'src/states/entity/player/PlayerSwingSwordState'
 require 'src/states/entity/player/PlayerWalkState'
+require 'src/states/entity/player/PlayerLiftPotState'
+require 'src/states/entity/player/PlayerWalkPotState'
+require 'src/states/entity/player/PlayerIdlePotState'
 
 require 'src/states/game/GameOverState'
 require 'src/states/game/PlayState'
@@ -39,6 +42,8 @@ gTextures = {
     ['tiles'] = love.graphics.newImage('graphics/tilesheet.png'),
     ['background'] = love.graphics.newImage('graphics/background.png'),
     ['character-walk'] = love.graphics.newImage('graphics/character_walk.png'),
+    ['character-pot-lift'] = love.graphics.newImage('graphics/character_pot_lift.png'),
+    ['character-pot-walk'] = love.graphics.newImage('graphics/character_pot_walk.png'),
     ['character-swing-sword'] = love.graphics.newImage('graphics/character_swing_sword.png'),
     ['hearts'] = love.graphics.newImage('graphics/hearts.png'),
     ['heartssmall'] = love.graphics.newImage('graphics/heartssmall.png'),
@@ -49,6 +54,8 @@ gTextures = {
 gFrames = {
     ['tiles'] = GenerateQuads(gTextures['tiles'], 16, 16),
     ['character-walk'] = GenerateQuads(gTextures['character-walk'], 16, 32),
+    ['character-pot-lift'] = GenerateQuads(gTextures['character-pot-lift'], 16, 32),
+    ['character-pot-walk'] = GenerateQuads(gTextures['character-pot-walk'], 16, 32),
     ['character-swing-sword'] = GenerateQuads(gTextures['character-swing-sword'], 32, 32),
     ['entities'] = GenerateQuads(gTextures['entities'], 16, 16),
     ['hearts'] = GenerateQuads(gTextures['hearts'], 16, 16),
@@ -72,5 +79,6 @@ gSounds = {
     ['hit-enemy'] = love.audio.newSource('sounds/hit_enemy.wav', 'static'),
     ['hit-player'] = love.audio.newSource('sounds/hit_player.wav', 'static'),
     ['door'] = love.audio.newSource('sounds/door.wav', 'static'),
-    ['powerup'] = love.audio.newSource('sounds/powerup.wav', 'static')
+    ['powerup'] = love.audio.newSource('sounds/powerup.wav', 'static'),
+    ['pickup'] = love.audio.newSource('sounds/pickup.wav', 'static')
 }

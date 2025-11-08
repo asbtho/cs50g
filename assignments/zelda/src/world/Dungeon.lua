@@ -15,7 +15,7 @@ function Dungeon:init(player)
     self.rooms = {}
 
     -- current room we're operating in
-    self.currentRoom = Room(self.player)
+    self.currentRoom = Room(self.player, self)
 
     -- room we're moving camera to during a shift; becomes active room afterwards
     self.nextRoom = nil
@@ -51,7 +51,7 @@ function Dungeon:beginShifting(shiftX, shiftY)
 
     -- commence shifting and create a new room to transition to
     self.shifting = true
-    self.nextRoom = Room(self.player)
+    self.nextRoom = Room(self.player, self)
 
     -- start all doors in next room as open until we get in
     for k, doorway in pairs(self.nextRoom.doorways) do

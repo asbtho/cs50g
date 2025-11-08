@@ -8,9 +8,11 @@
 
 Room = Class{}
 
-function Room:init(player)
+function Room:init(player, dungeon)
     self.width = MAP_WIDTH
     self.height = MAP_HEIGHT
+
+    self.dungeon = dungeon
 
     self.tiles = {}
     self:generateWallsAndFloors()
@@ -68,8 +70,8 @@ function Room:generateEntities()
         })
 
         self.entities[i].stateMachine = StateMachine {
-            ['walk'] = function() return EntityWalkState(self.entities[i]) end,
-            ['idle'] = function() return EntityIdleState(self.entities[i]) end
+            ['walk'] = function() return EntityWalkState(self.entities[i], self.dungeon) end,
+            ['idle'] = function() return EntityIdleState(self.entities[i], self.dungeon) end
         }
 
         self.entities[i]:changeState('walk')
@@ -80,13 +82,9 @@ end
     Randomly creates an assortment of obstacles for the player to navigate around.
 ]]
 function Room:generateObjects()
-    local switch = GameObject(
-        GAME_OBJECT_DEFS['switch'],
-        math.random(MAP_RENDER_OFFSET_X + TILE_SIZE,
-                    VIRTUAL_WIDTH - TILE_SIZE * 2 - 16),
-        math.random(MAP_RENDER_OFFSET_Y + TILE_SIZE,
-                    VIRTUAL_HEIGHT - (VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) + MAP_RENDER_OFFSET_Y - TILE_SIZE - 16)
-    )
+    local randomX = math.random( MAP_RENDER_OFFSET_X + TILE_SIZE, VIRTUAL_WIDTH - TILE_SIZE * 2 - 16)
+    local randomY = math.random( MAP_RENDER_OFFSET_Y + TILE_SIZE, VIRTUAL_HEIGHT - (VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) + MAP_RENDER_OFFSET_Y - TILE_SIZE - 16)
+    local switch = GameObject( GAME_OBJECT_DEFS['switch'], randomX, randomY )
 
     -- define a function for the switch that will open all doors in the room
     switch.onCollide = function()
@@ -104,6 +102,29 @@ function Room:generateObjects()
 
     -- add to list of objects in scene (only one switch for now)
     table.insert(self.objects, switch)
+
+
+    -- generate not in use coords for pot
+    local potRandomX
+    local potRandomY
+
+    repeat
+        potRandomX = math.random( MAP_RENDER_OFFSET_X + TILE_SIZE, VIRTUAL_WIDTH - TILE_SIZE * 2 - 16)
+    until potRandomX ~= randomX
+
+    repeat
+        potRandomY = math.random( MAP_RENDER_OFFSET_Y + TILE_SIZE, VIRTUAL_HEIGHT - (VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) + MAP_RENDER_OFFSET_Y - TILE_SIZE - 16)
+    until potRandomY ~= randomY
+
+    -- pot 
+    local pot = GameObject( GAME_OBJECT_DEFS['pot'],
+        math.random(MAP_RENDER_OFFSET_X + TILE_SIZE,
+                    VIRTUAL_WIDTH - TILE_SIZE * 2 - 16),
+        math.random(MAP_RENDER_OFFSET_Y + TILE_SIZE,
+                    VIRTUAL_HEIGHT - (VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) + MAP_RENDER_OFFSET_Y - TILE_SIZE - 16)
+    )
+    -- add pot to objects list
+    table.insert(self.objects, pot)
 end
 
 --[[
@@ -203,6 +224,12 @@ function Room:update(dt)
             object:onCollide()
         end
     end
+
+    for k, object in pairs(self.objects) do
+        if object.removed then
+            table.remove(self.objects, object)
+        end
+    end
 end
 
 function Room:render()
@@ -255,6 +282,12 @@ function Room:render()
     
     if self.player then
         self.player:render()
+    end
+
+    for k, object in pairs(self.objects) do
+        if object.state == "pickedup" then
+            object:render(self.adjacentOffsetX, self.adjacentOffsetY)
+        end
     end
 
     love.graphics.setStencilTest()
