@@ -202,18 +202,18 @@ function Level:update(dt)
     if self.launchMarker.launched then
         local xPos, yPos = self.launchMarker.alien.body:getPosition()
         local xVel, yVel = self.launchMarker.alien.body:getLinearVelocity()
-        local count = 0
         
         -- if we fired our alien to the left or it's almost done rolling, respawn
-        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 1.5) then
+        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 1.5) or xPos > (VIRTUAL_WIDTH * 2) then
             if #self.splitAliens == 2 then
-                count = self:splitAliensStopped()
+                local count = self:splitAliensStopped()
                 if count == 2 then
                     for k, alien in pairs(self.splitAliens) do
                         alien.body:destroy()
                     end
                     self.launchMarker.alien.body:destroy()
                     self.launchMarker = AlienLaunchMarker(self.world)
+                    self.allowSplit = true
 
                     -- re-initialize level if we have no more aliens
                     if #self.aliens == 0 then
@@ -223,12 +223,20 @@ function Level:update(dt)
             else
                 self.launchMarker.alien.body:destroy()
                 self.launchMarker = AlienLaunchMarker(self.world)
+                self.allowSplit = true
 
                 -- re-initialize level if we have no more aliens
                 if #self.aliens == 0 then
                     gStateMachine:change('start')
                 end
             end
+        end
+    end
+
+    -- remove all destroyed aliens from level
+    for i = #self.splitAliens, 1, -1 do
+        if self.splitAliens[i].body:isDestroyed() then
+            table.remove(self.splitAliens, i)
         end
     end
 end
@@ -279,7 +287,7 @@ function Level:splitAliensStopped()
         local xVel, yVel = alien.body:getLinearVelocity()
         
         -- if we fired our alien to the left or it's almost done rolling, respawn
-        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 1.5) then
+        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 1.5) or xPos > (VIRTUAL_WIDTH * 2) then
             count = count + 1
         end
     end
