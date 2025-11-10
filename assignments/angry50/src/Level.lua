@@ -18,7 +18,8 @@ function Level:init()
     -- actual collision callbacks can cause stack overflow and other errors
     self.destroyedBodies = {}
 
-    self.allowSplit = true
+    self.allowSplit = false
+    self.splitEnabled = false
 
     -- define collision callbacks for our world; the World object expects four,
     -- one for different stages of any given collision
@@ -200,6 +201,10 @@ function Level:update(dt)
 
     -- replace launch marker if original alien stopped moving
     if self.launchMarker.launched then
+        if not self.splitEnabled then
+            self.allowSplit = true
+            self.splitEnabled = true
+        end
         local xPos, yPos = self.launchMarker.alien.body:getPosition()
         local xVel, yVel = self.launchMarker.alien.body:getLinearVelocity()
         
