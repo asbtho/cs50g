@@ -18,6 +18,9 @@ function Level:init()
     -- actual collision callbacks can cause stack overflow and other errors
     self.destroyedBodies = {}
 
+    self.allowSplit = false
+    self.splitEnabled = false
+
     -- define collision callbacks for our world; the World object expects four,
     -- one for different stages of any given collision
     function beginContact(a, b, coll)
@@ -27,7 +30,7 @@ function Level:init()
 
         -- if we collided between both the player and an obstacle...
         if types['Obstacle'] and types['Player'] then
-
+            self.allowSplit = false
             -- grab the body that belongs to the player
             local playerFixture = a:getUserData() == 'Player' and a or b
             local obstacleFixture = a:getUserData() == 'Obstacle' and a or b
@@ -43,7 +46,7 @@ function Level:init()
 
         -- if we collided between an obstacle and an alien, as by debris falling...
         if types['Obstacle'] and types['Alien'] then
-
+            self.allowSplit = false
             -- grab the body that belongs to the player
             local obstacleFixture = a:getUserData() == 'Obstacle' and a or b
             local alienFixture = a:getUserData() == 'Alien' and a or b
@@ -59,7 +62,7 @@ function Level:init()
 
         -- if we collided between the player and the alien...
         if types['Player'] and types['Alien'] then
-
+            self.allowSplit = false
             -- grab the bodies that belong to the player and alien
             local playerFixture = a:getUserData() == 'Player' and a or b
             local alienFixture = a:getUserData() == 'Alien' and a or b
@@ -75,6 +78,7 @@ function Level:init()
 
         -- if we hit the ground, play a bounce sound
         if types['Player'] and types['Ground'] then
+            self.allowSplit = false
             gSounds['bounce']:stop()
             gSounds['bounce']:play()
         end
@@ -103,6 +107,8 @@ function Level:init()
 
     -- aliens in our scene
     self.aliens = {}
+
+    self.splitAliens = {}
 
     -- obstacles guarding aliens that we can destroy
     self.obstacles = {}
@@ -139,6 +145,29 @@ function Level:update(dt)
     -- Box2D world update code; resolves collisions and processes callbacks
     self.world:update(dt)
 
+    if love.keyboard.wasPressed('space') and self.allowSplit then
+        self.allowSplit = false
+        local xPos, yPos = self.launchMarker.alien.body:getPosition()
+        local xVel, yVel = self.launchMarker.alien.body:getLinearVelocity()
+        local angle = self.launchMarker.alien.body:getAngle()
+
+        local splitAlien = Alien(self.world, 'round', xPos, yPos, 'Player')
+        local splitAlien2 = Alien(self.world, 'round', xPos, yPos, 'Player')
+
+        splitAlien.body:setAngle(angle + 0.5)
+        splitAlien.body:setLinearVelocity(xVel + 50, yVel + 50)
+        splitAlien.fixture:setRestitution(0.4)
+        splitAlien.body:setAngularDamping(1)
+
+        splitAlien2.body:setAngle(angle - 0.5)
+        splitAlien2.body:setLinearVelocity(xVel + 50, yVel + 50)
+        splitAlien2.fixture:setRestitution(0.4)
+        splitAlien2.body:setAngularDamping(1)
+
+        table.insert(self.splitAliens, splitAlien)
+        table.insert(self.splitAliens, splitAlien2)
+    end
+
     -- destroy all bodies we calculated to destroy during the update call
     for k, body in pairs(self.destroyedBodies) do
         if not body:isDestroyed() then 
@@ -172,18 +201,47 @@ function Level:update(dt)
 
     -- replace launch marker if original alien stopped moving
     if self.launchMarker.launched then
+        if not self.splitEnabled then
+            self.allowSplit = true
+            self.splitEnabled = true
+        end
         local xPos, yPos = self.launchMarker.alien.body:getPosition()
         local xVel, yVel = self.launchMarker.alien.body:getLinearVelocity()
         
         -- if we fired our alien to the left or it's almost done rolling, respawn
-        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 1.5) then
-            self.launchMarker.alien.body:destroy()
-            self.launchMarker = AlienLaunchMarker(self.world)
+        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 1.5) or xPos > (VIRTUAL_WIDTH * 2) then
+            if #self.splitAliens == 2 then
+                local count = self:splitAliensStopped()
+                if count == 2 then
+                    for k, alien in pairs(self.splitAliens) do
+                        alien.body:destroy()
+                    end
+                    self.launchMarker.alien.body:destroy()
+                    self.launchMarker = AlienLaunchMarker(self.world)
+                    self.allowSplit = true
 
-            -- re-initialize level if we have no more aliens
-            if #self.aliens == 0 then
-                gStateMachine:change('start')
+                    -- re-initialize level if we have no more aliens
+                    if #self.aliens == 0 then
+                        gStateMachine:change('start')
+                    end
+                end
+            else
+                self.launchMarker.alien.body:destroy()
+                self.launchMarker = AlienLaunchMarker(self.world)
+                self.allowSplit = true
+
+                -- re-initialize level if we have no more aliens
+                if #self.aliens == 0 then
+                    gStateMachine:change('start')
+                end
             end
+        end
+    end
+
+    -- remove all destroyed aliens from level
+    for i = #self.splitAliens, 1, -1 do
+        if self.splitAliens[i].body:isDestroyed() then
+            table.remove(self.splitAliens, i)
         end
     end
 end
@@ -198,6 +256,10 @@ function Level:render()
     self.launchMarker:render()
 
     for k, alien in pairs(self.aliens) do
+        alien:render()
+    end
+
+    for k, alien in pairs(self.splitAliens) do
         alien:render()
     end
 
@@ -221,4 +283,19 @@ function Level:render()
         love.graphics.printf('VICTORY', 0, VIRTUAL_HEIGHT / 2 - 32, VIRTUAL_WIDTH, 'center')
         love.graphics.setColor(1, 1, 1, 1)
     end
+end
+
+function Level:splitAliensStopped()
+    local count = 0
+    for k, alien in pairs(self.splitAliens) do
+        local xPos, yPos = alien.body:getPosition()
+        local xVel, yVel = alien.body:getLinearVelocity()
+        
+        -- if we fired our alien to the left or it's almost done rolling, respawn
+        if xPos < 0 or (math.abs(xVel) + math.abs(yVel) < 1.5) or xPos > (VIRTUAL_WIDTH * 2) then
+            count = count + 1
+        end
+    end
+
+    return count
 end
