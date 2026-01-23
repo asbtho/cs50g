@@ -32,6 +32,7 @@ public class GameOverText : MonoBehaviour {
 			if (Input.GetButtonDown("Jump")) {
 
 				// reload entire scene, starting music over again, refreshing score, etc.
+				SkyscraperSpawner.speed = 10f;
 				SceneManager.LoadScene("Main");
 			}
 		}
