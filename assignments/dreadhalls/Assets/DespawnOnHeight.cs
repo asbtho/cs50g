@@ -5,6 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class DespawnOnHeight : MonoBehaviour {
 
+	public LevelText levelTextClass;
+
 	// Use this for initialization
 	void Start () {
 		
@@ -14,6 +16,7 @@ public class DespawnOnHeight : MonoBehaviour {
 	void Update () {
 		if ( transform.position.y < 0 ){
 			Destroy(GameObject.Find("WhisperSource"));
+			levelTextClass.resetLevel();
 			SceneManager.LoadScene("GameOver");
 		}
 	}
