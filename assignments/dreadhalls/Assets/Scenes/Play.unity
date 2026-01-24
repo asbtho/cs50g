@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.12731725, g: 0.13414745, b: 0.12107873, a: 1}
+  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.1210787, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -178,6 +178,7 @@ MonoBehaviour:
   wallsParent: {fileID: 1229837569}
   generateRoof: 1
   tilesToRemove: 350
+  holesToPlace: 3
   mazeSize: 30
   pickup: {fileID: 100000, guid: be400c8265d9c4977800d48e9650f26e, type: 2}
 --- !u!4 &502313971
@@ -468,7 +469,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28dcece8f24734b5aa46e98c0547fecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pickupSoundSource: {fileID: 748641241}
+--- !u!114 &1286802631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1286802624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88645c159250e374191f63d5ea243115, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1695506664
 Prefab:
   m_ObjectHideFlags: 0
